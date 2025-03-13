@@ -807,6 +807,7 @@ PlayerSettings:
   webWasm2023: 0
   scriptingDefineSymbols:
     Android: 
+    Standalone: REFLEX_DEBUG
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend:
