@@ -13,12 +13,12 @@ namespace Code
         [SerializeField] private AssetReference _prototypeReference;
         
         private IAssetProvider _assetProvider;
-        private IObjectFactory _factory;
+        private IGameObjectFactory _factory;
         private ILog _log;
         private IEnumerable<string> _strings;
 
         [Inject]
-        private void Construct(IAssetProvider assetProvider, IObjectFactory factory, ILog log, IEnumerable<string> strings)
+        private void Construct(IAssetProvider assetProvider, IGameObjectFactory factory, ILog log, IEnumerable<string> strings)
         {
             _assetProvider = assetProvider;
             _factory = factory;
@@ -31,7 +31,7 @@ namespace Code
             _log.Write(string.Join(" ", _strings));
 
             GameObject prototypeAsset = await _assetProvider.LoadAssetAsync<GameObject>(_prototypeReference);
-            GameObject instance = _factory.Instantiate(prototypeAsset);
+            GameObject instance = await _factory.InstantiateAsync(prototypeAsset);
             
             _assetProvider.Release(_prototypeReference);
         }

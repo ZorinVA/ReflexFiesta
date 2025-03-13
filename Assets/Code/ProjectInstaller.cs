@@ -13,6 +13,7 @@ namespace Code
             containerBuilder
                 .AddSingleton("Hello")
                 .AddSingleton(concrete: typeof(ObjectFactory), contracts: typeof(IObjectFactory))
+                .AddSingleton(concrete: typeof(GameObjectFactory), contracts: typeof(IGameObjectFactory))
                 .AddSingleton(concrete: typeof(UnityLog), contracts: typeof(ILog))
                 .AddSingleton(concrete: typeof(AssetProvider), contracts: typeof(IAssetProvider));
         }

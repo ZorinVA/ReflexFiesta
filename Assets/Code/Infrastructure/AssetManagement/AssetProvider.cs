@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 
@@ -7,21 +7,21 @@ namespace Code.Infrastructure.AssetManagement
 {
     public sealed class AssetProvider : IAssetProvider
     {
-        private readonly Dictionary<string, HandleInfo> _handles;
+        private readonly Dictionary<string, HandleDetails> _handles;
 
         public AssetProvider()
         {
-            _handles = new Dictionary<string, HandleInfo>();
+            _handles = new Dictionary<string, HandleDetails>();
         }
 
-        public Task<T> LoadAssetAsync<T>(AssetReference assetReference)
+        public UniTask<T> LoadAssetAsync<T>(AssetReference assetReference)
         {
             string assetKey = assetReference.AssetGUID;
 
-            if (!_handles.TryGetValue(assetKey, out HandleInfo handleInfo))
+            if (!_handles.TryGetValue(assetKey, out HandleDetails handleInfo))
             {
                 AsyncOperationHandle handle = Addressables.LoadAssetAsync<T>(assetReference);
-                handleInfo = new HandleInfo(handle);
+                handleInfo = new HandleDetails(handle);
                 
                 _handles[assetKey] = handleInfo;
             }
@@ -29,14 +29,14 @@ namespace Code.Infrastructure.AssetManagement
             handleInfo.ReferenceCount++;
             AsyncOperationHandle<T> operationHandle = handleInfo.Handle.Convert<T>();
             
-            return operationHandle.Task;
+            return operationHandle.Task.AsUniTask();
         }
         
         public void Release(AssetReference assetReference)
         {
             string assetKey = assetReference.AssetGUID;
 
-            if (!_handles.TryGetValue(assetKey, out HandleInfo handleInfo))
+            if (!_handles.TryGetValue(assetKey, out HandleDetails handleInfo))
                 return;
             
             if (0 < --handleInfo.ReferenceCount)
@@ -48,7 +48,7 @@ namespace Code.Infrastructure.AssetManagement
         
         public void ReleaseAll()
         {
-            foreach (HandleInfo handleInfo in _handles.Values)
+            foreach (HandleDetails handleInfo in _handles.Values)
             {
                 Addressables.Release(handleInfo.Handle);
             }
@@ -56,12 +56,12 @@ namespace Code.Infrastructure.AssetManagement
             _handles.Clear();
         }
         
-        private sealed class HandleInfo
+        private sealed class HandleDetails
         {
             public AsyncOperationHandle Handle { get; }
             public int ReferenceCount { get; set; }
         
-            public HandleInfo(AsyncOperationHandle handle)
+            public HandleDetails(AsyncOperationHandle handle)
             {
                 Handle = handle;
                 ReferenceCount = 0;
